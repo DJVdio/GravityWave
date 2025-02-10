@@ -6,13 +6,15 @@ import java.util.Random;
 
 public class GravityWaveManager {
     private static final double WAVE_INTERVAL = 10.0; // 10秒变化一次
+    private static final int INITIATE_WAVE = 1;
     private int currentWave = 1; // 开局时重力波级别一定是1
     private double waveTimer = 0;
     private final Random random = new Random();
 
+
     public GravityWaveManager() {
         // 确保开局时重力波级别为1
-        currentWave = 1;
+        currentWave = INITIATE_WAVE;
     }
 
     public void update(double elapsedTime) {
@@ -71,7 +73,7 @@ public class GravityWaveManager {
     }
 
     public void reset() {
-        currentWave = 1;          // 重置为初始重力波
+        currentWave = INITIATE_WAVE;          // 重置为初始重力波
         waveTimer = 0;     // 重置倒计时
     }
 }
