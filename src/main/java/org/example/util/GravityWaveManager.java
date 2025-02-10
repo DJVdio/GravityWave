@@ -69,4 +69,9 @@ public class GravityWaveManager {
     public double getRemainingTime() {
         return WAVE_INTERVAL - waveTimer;
     }
+
+    public void reset() {
+        currentWave = 1;          // 重置为初始重力波
+        waveTimer = 0;     // 重置倒计时
+    }
 }

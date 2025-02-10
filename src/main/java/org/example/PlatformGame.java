@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -35,12 +36,24 @@ public class PlatformGame extends Application {
     private final Random random = new Random();
     private double lastPowerBallSpawn = 0;
 
+    // 新增 Replay 按钮
+    private Button replayButton;
+
     @Override
     public void start(Stage primaryStage) {
         Pane root = new Pane();
         Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
+
+        // 初始化 Replay 按钮
+        replayButton = new Button("Replay");
+        replayButton.setFont(new Font("Arial", 24));
+        replayButton.setLayoutX(SCREEN_WIDTH / 2 - 60);
+        replayButton.setLayoutY(SCREEN_HEIGHT / 2 + 100);
+        replayButton.setVisible(false);
+        replayButton.setOnAction(e -> resetGame());
+        root.getChildren().add(replayButton);
 
         // 初始化玩家
         double groundY = SCREEN_HEIGHT - 20 - Player.PLAYER_SIZE;
@@ -82,31 +95,20 @@ public class PlatformGame extends Application {
                     double elapsedTime = (now - lastUpdateTime) / 1_000_000_000.0;
                     lastUpdateTime = now;
 
-                    // 更新重力波状态
                     gravityWaveManager.update(elapsedTime);
-
-                    // 更新玩家状态
                     player1.update(platforms, player2, elapsedTime);
                     player2.update(platforms, player1, elapsedTime);
-
-                    // 更新子弹状态
                     updateBullets();
-
-                    // 检查子弹碰撞
                     checkBulletCollision();
-
-                    // 更新和生成强化球
                     updatePowerBalls(elapsedTime);
                     checkPowerBallCollision();
-
-                    // 生成新的强化球
                     spawnPowerBall(elapsedTime);
                 }
                 draw(gc);
             }
         }.start();
 
-        primaryStage.setTitle("src.Platform Game with Power-Ups");
+        primaryStage.setTitle("Platform Game with Power-Ups");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -140,7 +142,7 @@ public class PlatformGame extends Application {
 
     private void spawnPowerBall(double elapsedTime) {
         lastPowerBallSpawn += elapsedTime;
-        if (lastPowerBallSpawn >= 4.0) { // 每4秒生成一个
+        if (lastPowerBallSpawn >= 4.0) {
             generatePowerBall();
             lastPowerBallSpawn = 0;
         }
@@ -158,7 +160,7 @@ public class PlatformGame extends Application {
         while (iterator.hasNext()) {
             PowerBall powerBall = iterator.next();
             powerBall.update(elapsedTime);
-            if (powerBall.isExpired(elapsedTime)) {
+            if (powerBall.isExpired(System.nanoTime() / 1_000_000_000.0)) {
                 iterator.remove();
             }
         }
@@ -182,23 +184,25 @@ public class PlatformGame extends Application {
         gc.setFill(gravityWaveManager.getWaveColor());
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        player1.draw(gc);
-        player2.draw(gc);
+        if (!gameOver) {
+            player1.draw(gc);
+            player2.draw(gc);
 
-        gc.setFill(Color.WHITE);
-        for (Platform platform : platforms) {
-            gc.fillRect(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
+            gc.setFill(Color.WHITE);
+            for (Platform platform : platforms) {
+                gc.fillRect(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
+            }
+
+            for (Bullet bullet : bullets) {
+                bullet.draw(gc);
+            }
+
+            for (PowerBall powerBall : powerBalls) {
+                powerBall.draw(gc);
+            }
+
+            drawGravityWaveInfo(gc);
         }
-
-        for (Bullet bullet : bullets) {
-            bullet.draw(gc);
-        }
-
-        for (PowerBall powerBall : powerBalls) {
-            powerBall.draw(gc);
-        }
-
-        drawGravityWaveInfo(gc);
 
         if (gameOver) {
             gc.setFont(new Font("Arial", 60));
@@ -222,7 +226,28 @@ public class PlatformGame extends Application {
 
     public void gameOver(int winnerId) {
         gameOver = true;
-        winnerText = "src.Player " + winnerId + " Wins!";
+        winnerText = "Player " + winnerId + " Wins!";
+        replayButton.setVisible(true); // 显示 Replay 按钮
+    }
+
+    // 重置游戏状态
+    private void resetGame() {
+        gameOver = false;
+        winnerText = "";
+        replayButton.setVisible(false);
+
+        // 重置玩家位置和属性
+        double groundY = SCREEN_HEIGHT - 20 - Player.PLAYER_SIZE;
+        player1 = new Player(100, groundY, 1, 1.5, gravityWaveManager);
+        player2 = new Player(400, 100, 2, 1.5, gravityWaveManager);
+
+        // 清空子弹和强化球
+        bullets.clear();
+        powerBalls.clear();
+        lastPowerBallSpawn = 0;
+
+        // 重置重力波管理器
+        gravityWaveManager.reset();
     }
 
     public static void main(String[] args) {
