@@ -208,7 +208,7 @@ public class Player {
             shootCountdown.reset();
             double bulletX = facingRight ? x + PLAYER_SIZE : x - Bullet.SIZE;
             double bulletY = y + (PLAYER_SIZE - Bullet.SIZE) / 2;
-            return new Bullet(bulletX, bulletY, facingRight, bulletSpeed);
+            return new Bullet(bulletX, bulletY, facingRight, bulletSpeed, playerId); // 添加 playerId
         }
         return null;
     }
@@ -217,14 +217,11 @@ public class Player {
         double imgX = x;
         double imgY = y;
 
-        // 处理垂直翻转（重力反转）
         if (isInverted) {
             imgY = y + PLAYER_SIZE;
         }
         gc.save();
-        // 处理水平翻转
         if (!facingRight) {
-            // 水平翻转：将原点移动到右侧边缘并应用缩放
             gc.translate(imgX + PLAYER_SIZE, imgY);
             gc.scale(-1, 1);
         } else {
@@ -265,11 +262,8 @@ public class Player {
 
     public void setShootInterval(double shootInterval) {
         this.shootInterval = shootInterval;
-        // 保存当前的剩余时间
         double remainingTime = shootCountdown.getRemainingTime();
-        // 创建新的倒计时
         shootCountdown = new CountdownUtil(shootInterval);
-        // 如果当前倒计时未完成，设置剩余时间
         if (!shootCountdown.isFinished()) {
             shootCountdown.update(remainingTime);
         }
@@ -284,11 +278,14 @@ public class Player {
     }
 
     public double getRemainingTime() {
-        double remainingTime = shootCountdown.getRemainingTime();
-        return remainingTime;
+        return shootCountdown.getRemainingTime();
     }
 
     public void setRemainingTime(double remainingTime) {
         shootCountdown.setRemainingTime(remainingTime);
+    }
+
+    public int getPlayerId() {
+        return playerId;
     }
 }

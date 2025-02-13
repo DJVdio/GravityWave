@@ -11,6 +11,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import org.example.powerBall.AttackBall;
+import org.example.powerBall.BallTypeEnum;
 import org.example.powerBall.PowerBall;
 import org.example.powerBall.ShootingSpeedUpBall;
 import org.example.util.GravityWaveManager;
@@ -21,12 +23,12 @@ import java.util.List;
 import java.util.Random;
 
 public class PlatformGame extends Application {
-    static final int SCREEN_WIDTH = 1600;
-    static final int SCREEN_HEIGHT = 900;
+    public static final int SCREEN_WIDTH = 1600;
+    public static final int SCREEN_HEIGHT = 900;
 
     private Player player1;
     private Player player2;
-    private List<Bullet> bullets = new ArrayList<>();
+    private static List<Bullet> bullets = new ArrayList<>();
     private Platform platform = new Platform();
     private List<Platform> platforms = platform.getPlatforms();
     private boolean gameOver = false;
@@ -148,13 +150,6 @@ public class PlatformGame extends Application {
         }
     }
 
-    private void generatePowerBall() {
-        double x = random.nextDouble() * (SCREEN_WIDTH - 50);
-        double y = random.nextDouble() * (SCREEN_HEIGHT - 50);
-        PowerBall powerBall = new ShootingSpeedUpBall(x, y);
-        powerBalls.add(powerBall);
-    }
-
     private void updatePowerBalls(double elapsedTime) {
         Iterator<PowerBall> iterator = powerBalls.iterator();
         while (iterator.hasNext()) {
@@ -171,10 +166,10 @@ public class PlatformGame extends Application {
         while (iterator.hasNext()) {
             PowerBall powerBall = iterator.next();
             if (powerBall.checkCollision(player1.getX(), player1.getY(), Player.PLAYER_SIZE)) {
-                powerBall.applyEffect(player1);
+                powerBall.applyEffect(player1, player2); // 传递另一名玩家
                 iterator.remove();
             } else if (powerBall.checkCollision(player2.getX(), player2.getY(), Player.PLAYER_SIZE)) {
-                powerBall.applyEffect(player2);
+                powerBall.applyEffect(player2, player1); // 传递另一名玩家
                 iterator.remove();
             }
         }
@@ -248,6 +243,29 @@ public class PlatformGame extends Application {
 
         // 重置重力波管理器
         gravityWaveManager.reset();
+    }
+
+    public static void addBullets(List<Bullet> newBullets) {
+        bullets.addAll(newBullets);
+    }
+
+    private void generatePowerBall() {
+        double x = random.nextDouble() * (SCREEN_WIDTH - 50);
+        double y = random.nextDouble() * (SCREEN_HEIGHT - 50);
+
+        PowerBall powerBall;
+        switch (random.nextInt(BallTypeEnum.values().length)){
+            case 0:
+                powerBall = new AttackBall(x, y);
+                break;
+            case 1:
+                powerBall = new ShootingSpeedUpBall(x, y);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + random.nextInt(BallTypeEnum.values().length));
+        }
+
+        powerBalls.add(powerBall);
     }
 
     public static void main(String[] args) {
