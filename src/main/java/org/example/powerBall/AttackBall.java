@@ -36,7 +36,7 @@ public class AttackBall extends PowerBall {
     private void spawnAttackBullets(Player shooter, Player target) {
         List<Bullet> bullets = new ArrayList<>();
         int attackerId = shooter.getPlayerId(); // 获取发射者 ID
-        double bulletSpeed = shooter.getBulletSpeed() / 2.0; // 子弹速度为玩家速度的一半
+        double bulletSpeed = shooter.getBulletSpeed() / 2.5;
 
         for (int i = 0; i < 8; i++) {
             // 生成屏幕外随机位置
