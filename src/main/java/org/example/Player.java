@@ -6,6 +6,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import org.example.util.CountdownUtil;
 import org.example.util.GravityWaveManager;
+import org.example.util.ParticleSystem;
 
 import java.util.List;
 
@@ -33,9 +34,10 @@ public class Player {
 
     private CountdownUtil shootCountdown;
     private final GravityWaveManager gravityWaveManager;
+    private final ParticleSystem particleSystem;
 
     public Player(double startX, double startY, int playerId, double shootInterval,
-                  GravityWaveManager gravityWaveManager) {
+                  GravityWaveManager gravityWaveManager, ParticleSystem particleSystem) {
         this.x = startX;
         this.y = startY;
         this.playerId = playerId;
@@ -43,6 +45,7 @@ public class Player {
         this.shootCountdown = new CountdownUtil(shootInterval);
         this.shootCountdown.reset(true);
         this.gravityWaveManager = gravityWaveManager;
+        this.particleSystem = particleSystem;
         String imagePath = "player" + playerId + ".png";
         playerImage = new Image(imagePath, PLAYER_SIZE, PLAYER_SIZE, true, true);
     }
@@ -93,6 +96,14 @@ public class Player {
         velocityY = BASE_JUMP_FORCE * getJumpDirection();
         isJumping = true;
         isOnGround = false;
+        // 生成跳跃尘土粒子效果
+        particleSystem.addEffect(
+                x + PLAYER_SIZE / 2,
+                y + PLAYER_SIZE,
+                ParticleSystem.EffectType.JUMP_DUST
+        );
+        // 播放跳跃音效
+        PlatformGame.playJumpSound();
     }
 
     public void handleKeyRelease(KeyCode code) {
@@ -208,7 +219,7 @@ public class Player {
             shootCountdown.reset();
             double bulletX = facingRight ? x + PLAYER_SIZE : x - Bullet.SIZE;
             double bulletY = y + (PLAYER_SIZE - Bullet.SIZE) / 2;
-            return new Bullet(bulletX, bulletY, facingRight, bulletSpeed, playerId); // 添加 playerId
+            return new Bullet(bulletX, bulletY, facingRight, bulletSpeed, playerId);
         }
         return null;
     }
@@ -287,5 +298,10 @@ public class Player {
 
     public int getPlayerId() {
         return playerId;
+    }
+
+    // 添加一个访问器，用于判断是否在地面上
+    public boolean isOnGround() {
+        return isOnGround;
     }
 }

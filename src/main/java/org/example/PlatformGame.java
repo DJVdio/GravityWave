@@ -8,6 +8,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -16,6 +18,7 @@ import org.example.powerBall.BallTypeEnum;
 import org.example.powerBall.PowerBall;
 import org.example.powerBall.ShootingSpeedUpBall;
 import org.example.util.GravityWaveManager;
+import org.example.util.ParticleSystem;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,7 +41,14 @@ public class PlatformGame extends Application {
     private final Random random = new Random();
     private double lastPowerBallSpawn = 0;
 
-    // 新增 Replay 按钮
+    // 粒子系统
+    private ParticleSystem particleSystem = new ParticleSystem();
+
+    // 音效（设为静态，便于在其他类中调用）
+    private static MediaPlayer shootSound;
+    private static MediaPlayer jumpSound;
+
+    // Replay 按钮
     private Button replayButton;
 
     @Override
@@ -59,23 +69,50 @@ public class PlatformGame extends Application {
 
         // 初始化玩家
         double groundY = SCREEN_HEIGHT - 20 - Player.PLAYER_SIZE;
-        player1 = new Player(100, groundY, 1, 1.5, gravityWaveManager);
-        player2 = new Player(400, 100, 2, 1.5, gravityWaveManager);
+        player1 = new Player(100, groundY, 1, 1.5, gravityWaveManager, particleSystem);
+        player2 = new Player(400, 100, 2, 1.5, gravityWaveManager, particleSystem);
+
+        // 加载音效
+        try {
+            shootSound = new MediaPlayer(new Media(getClass().getResource("/sounds/shoot.wav").toString()));
+            jumpSound = new MediaPlayer(new Media(getClass().getResource("/sounds/jump.wav").toString()));
+        } catch (Exception e) {
+            System.err.println("音效文件加载失败: " + e.getMessage());
+        }
 
         Scene scene = new Scene(root, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         scene.setOnKeyPressed(e -> {
             if (gameOver) return;
-            if (e.getCode() == KeyCode.A || e.getCode() == KeyCode.D || e.getCode() == KeyCode.K) {
+            if (e.getCode() == KeyCode.A || e.getCode() == KeyCode.D) {
                 player1.handleKeyPress(e.getCode());
-            } else if (e.getCode() == KeyCode.LEFT || e.getCode() == KeyCode.RIGHT || e.getCode() == KeyCode.NUMPAD2) {
+            } else if (e.getCode() == KeyCode.K) {
+                // 玩家 1 跳跃，并播放跳跃音效
+                if (player1.isOnGround()) {
+                    player1.handleKeyPress(e.getCode());
+                    playJumpSound();
+                }
+            } else if (e.getCode() == KeyCode.LEFT || e.getCode() == KeyCode.RIGHT) {
                 player2.handleKeyPress(e.getCode());
+            } else if (e.getCode() == KeyCode.NUMPAD2) {
+                if (player2.isOnGround()) {
+                    player2.handleKeyPress(e.getCode());
+                    playJumpSound();
+                }
             } else if (e.getCode() == KeyCode.J) {
                 Bullet bullet = player1.shoot();
-                if (bullet != null) bullets.add(bullet);
+                if (bullet != null) {
+                    bullets.add(bullet);
+                    shootSound.stop();
+                    shootSound.play();
+                }
             } else if (e.getCode() == KeyCode.NUMPAD1) {
                 Bullet bullet = player2.shoot();
-                if (bullet != null) bullets.add(bullet);
+                if (bullet != null) {
+                    bullets.add(bullet);
+                    shootSound.stop();
+                    shootSound.play();
+                }
             }
         });
 
@@ -120,6 +157,12 @@ public class PlatformGame extends Application {
         while (iterator.hasNext()) {
             Bullet bullet = iterator.next();
             bullet.update();
+            // 添加子弹尾迹效果
+            particleSystem.addEffect(
+                    bullet.getX() + Bullet.SIZE / 2,
+                    bullet.getY() + Bullet.SIZE / 2,
+                    ParticleSystem.EffectType.BULLET_TRAIL
+            );
             if (bullet.isOutOfBounds()) {
                 iterator.remove();
             }
@@ -166,10 +209,10 @@ public class PlatformGame extends Application {
         while (iterator.hasNext()) {
             PowerBall powerBall = iterator.next();
             if (powerBall.checkCollision(player1.getX(), player1.getY(), Player.PLAYER_SIZE)) {
-                powerBall.applyEffect(player1, player2); // 传递另一名玩家
+                powerBall.applyEffect(player1, player2);
                 iterator.remove();
             } else if (powerBall.checkCollision(player2.getX(), player2.getY(), Player.PLAYER_SIZE)) {
-                powerBall.applyEffect(player2, player1); // 传递另一名玩家
+                powerBall.applyEffect(player2, player1);
                 iterator.remove();
             }
         }
@@ -180,6 +223,9 @@ public class PlatformGame extends Application {
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         if (!gameOver) {
+            // 绘制粒子效果
+            particleSystem.updateAndDraw(gc, 0.016); // 假设帧率为60FPS
+
             player1.draw(gc);
             player2.draw(gc);
 
@@ -222,10 +268,9 @@ public class PlatformGame extends Application {
     public void gameOver(int winnerId) {
         gameOver = true;
         winnerText = "Player " + winnerId + " Wins!";
-        replayButton.setVisible(true); // 显示 Replay 按钮
+        replayButton.setVisible(true);
     }
 
-    // 重置游戏状态
     private void resetGame() {
         gameOver = false;
         winnerText = "";
@@ -233,8 +278,8 @@ public class PlatformGame extends Application {
 
         // 重置玩家位置和属性
         double groundY = SCREEN_HEIGHT - 20 - Player.PLAYER_SIZE;
-        player1 = new Player(100, groundY, 1, 1.5, gravityWaveManager);
-        player2 = new Player(400, 100, 2, 1.5, gravityWaveManager);
+        player1 = new Player(100, groundY, 1, 1.5, gravityWaveManager, particleSystem);
+        player2 = new Player(400, 100, 2, 1.5, gravityWaveManager, particleSystem);
 
         // 清空子弹和强化球
         bullets.clear();
@@ -245,16 +290,12 @@ public class PlatformGame extends Application {
         gravityWaveManager.reset();
     }
 
-    public static void addBullets(List<Bullet> newBullets) {
-        bullets.addAll(newBullets);
-    }
-
     private void generatePowerBall() {
         double x = random.nextDouble() * (SCREEN_WIDTH - 50);
         double y = random.nextDouble() * (SCREEN_HEIGHT - 50);
 
         PowerBall powerBall;
-        switch (random.nextInt(BallTypeEnum.values().length)){
+        switch (random.nextInt(BallTypeEnum.values().length)) {
             case 0:
                 powerBall = new AttackBall(x, y);
                 break;
@@ -266,6 +307,18 @@ public class PlatformGame extends Application {
         }
 
         powerBalls.add(powerBall);
+    }
+
+    public static void addBullets(List<Bullet> newBullets) {
+        bullets.addAll(newBullets);
+    }
+
+    // 静态方法，用于播放跳跃音效
+    public static void playJumpSound() {
+        if (jumpSound != null) {
+            jumpSound.stop();
+            jumpSound.play();
+        }
     }
 
     public static void main(String[] args) {

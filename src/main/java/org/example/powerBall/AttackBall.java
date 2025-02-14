@@ -4,6 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import org.example.Bullet;
 import org.example.Player;
 import org.example.PlatformGame;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +12,7 @@ import java.util.Random;
 public class AttackBall extends PowerBall {
     private static final double SIZE = 20; // 红球的大小
     private static final double LIFETIME = 8.0; // 红球的存活时间
-    private static final Random random = new Random(); // 随机数生成器
+    private static final Random random = new Random();
 
     public AttackBall(double x, double y) {
         super(x, y, SIZE, LIFETIME);
@@ -35,13 +36,12 @@ public class AttackBall extends PowerBall {
 
     private void spawnAttackBullets(Player shooter, Player target) {
         List<Bullet> bullets = new ArrayList<>();
-        int attackerId = shooter.getPlayerId(); // 获取发射者 ID
+        int attackerId = shooter.getPlayerId();
         double bulletSpeed = shooter.getBulletSpeed() / 2.5;
 
         for (int i = 0; i < 8; i++) {
-            // 生成屏幕外随机位置
             double startX, startY;
-            int edge = random.nextInt(4); // 随机选择屏幕边缘
+            int edge = random.nextInt(4);
             switch (edge) {
                 case 0: // 左边缘外
                     startX = -Bullet.SIZE;
@@ -61,7 +61,6 @@ public class AttackBall extends PowerBall {
                     break;
             }
 
-            // 确定目标位置
             double targetX, targetY;
             if (i == 7) { // 第八颗子弹追踪目标玩家
                 targetX = target.getX() + Player.PLAYER_SIZE / 2;
@@ -71,20 +70,17 @@ public class AttackBall extends PowerBall {
                 targetY = random.nextDouble() * PlatformGame.SCREEN_HEIGHT;
             }
 
-            // 计算射击角度
             double angle = Math.atan2(targetY - startY, targetX - startX);
 
-            // 创建红色子弹
             Bullet bullet = new Bullet(
                     startX,
                     startY,
                     true, // 方向参数不再重要
                     bulletSpeed,
                     attackerId,
-                    javafx.scene.paint.Color.RED // 设置红色
+                    javafx.scene.paint.Color.RED // 红色子弹
             );
 
-            // 设置二维速度
             bullet.setVelocity(
                     Math.cos(angle) * bulletSpeed,
                     Math.sin(angle) * bulletSpeed
@@ -93,6 +89,6 @@ public class AttackBall extends PowerBall {
             bullets.add(bullet);
         }
 
-        PlatformGame.addBullets(bullets); // 将子弹添加到游戏
+        PlatformGame.addBullets(bullets);
     }
 }
