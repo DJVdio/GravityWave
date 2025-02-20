@@ -223,7 +223,35 @@ public class PlatformGame extends Application {
     }
 
     private void draw(GraphicsContext gc) {
-        gc.setFill(gravityWaveManager.getWaveColor());
+        double t = System.nanoTime() / 1_000_000_000.0;
+        if (!gameOver && gravityWaveManager.getRemainingTime() >= 3.0) {
+            gc.setFill(gravityWaveManager.getWaveColor());
+        } else if (!gameOver
+                && gravityWaveManager.getRemainingTime() <= 3.0
+                && gravityWaveManager.getRemainingTime() > 1.0) {
+            double period = 0.4;
+            if (t % period < period / 2) {
+                gc.setFill(new Color(1, 1, 1, 0.3));
+            } else {
+                gc.setFill(gravityWaveManager.getWaveColor());
+            }
+        }else if (!gameOver
+                && gravityWaveManager.getRemainingTime() <= 1.5) {
+            double period = 0.25;
+            if (t % period < period / 2) {
+                gc.setFill(new Color(1, 1, 1, 0.3));
+            } else {
+                gc.setFill(gravityWaveManager.getWaveColor());
+            }
+        }else if (!gameOver
+                && gravityWaveManager.getRemainingTime() <= 0.75) {
+            double period = 0.1;
+            if (t % period < period / 2) {
+                gc.setFill(new Color(1, 1, 1, 0.3));
+            } else {
+                gc.setFill(gravityWaveManager.getWaveColor());
+            }
+        }
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         if (!gameOver) {
@@ -260,10 +288,11 @@ public class PlatformGame extends Application {
         }
 
         if (gameOver) {
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             gc.setFont(new Font("Arial", 60));
             gc.setFill(Color.WHITE);
             gc.fillText("Game Over", SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 50);
-
             gc.setFont(new Font("Arial", 40));
             gc.fillText(winnerText, SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 50);
         }
