@@ -6,11 +6,14 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.example.powerBall.AttackBall;
@@ -40,6 +43,7 @@ public class PlatformGame extends Application {
     private List<PowerBall> powerBalls = new ArrayList<>();
     private final Random random = new Random();
     private double lastPowerBallSpawn = 0;
+    private Image platformImage = platform.getPlatformImage();
 
     // 粒子系统
     private ParticleSystem particleSystem = new ParticleSystem();
@@ -229,11 +233,21 @@ public class PlatformGame extends Application {
             player1.draw(gc);
             player2.draw(gc);
 
-            gc.setFill(Color.WHITE);
+//            gc.setFill(Color.WHITE);
             for (Platform platform : platforms) {
-                gc.fillRect(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
+//                gc.fillRect(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
+                if (platformImage != null) {
+                    // 使用图片原始的宽高作为平铺单元
+                    ImagePattern pattern = new ImagePattern(
+                            platformImage,
+                            0, 0,
+                            platformImage.getWidth(), platformImage.getHeight(),
+                            false
+                    );
+                    gc.setFill(pattern);
+                    gc.fillRect(platform.getX(), platform.getY(), platform.getWidth(), platform.getHeight());
+                }
             }
-
             for (Bullet bullet : bullets) {
                 bullet.draw(gc);
             }

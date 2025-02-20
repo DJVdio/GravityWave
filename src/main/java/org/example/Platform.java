@@ -1,5 +1,7 @@
 package org.example;
 
+import javafx.scene.image.Image;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,5 +54,11 @@ public class Platform {
 
     public double getHeight() {
         return height;
+    }
+
+    static String imagePath = "platform.png";
+    static Image platformImage = new Image(imagePath);
+    public static Image getPlatformImage() {
+        return platformImage;
     }
 }
