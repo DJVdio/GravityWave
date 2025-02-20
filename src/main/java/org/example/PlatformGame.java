@@ -224,33 +224,8 @@ public class PlatformGame extends Application {
 
     private void draw(GraphicsContext gc) {
         double t = System.nanoTime() / 1_000_000_000.0;
-        if (!gameOver && gravityWaveManager.getRemainingTime() >= 3.0) {
+        if(!gameOver){
             gc.setFill(gravityWaveManager.getWaveColor());
-        } else if (!gameOver
-                && gravityWaveManager.getRemainingTime() <= 3.0
-                && gravityWaveManager.getRemainingTime() > 1.0) {
-            double period = 0.4;
-            if (t % period < period / 2) {
-                gc.setFill(new Color(1, 1, 1, 0.3));
-            } else {
-                gc.setFill(gravityWaveManager.getWaveColor());
-            }
-        }else if (!gameOver
-                && gravityWaveManager.getRemainingTime() <= 1.5) {
-            double period = 0.25;
-            if (t % period < period / 2) {
-                gc.setFill(new Color(1, 1, 1, 0.3));
-            } else {
-                gc.setFill(gravityWaveManager.getWaveColor());
-            }
-        }else if (!gameOver
-                && gravityWaveManager.getRemainingTime() <= 0.75) {
-            double period = 0.1;
-            if (t % period < period / 2) {
-                gc.setFill(new Color(1, 1, 1, 0.3));
-            } else {
-                gc.setFill(gravityWaveManager.getWaveColor());
-            }
         }
         gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
