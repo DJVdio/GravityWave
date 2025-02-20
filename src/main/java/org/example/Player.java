@@ -53,7 +53,7 @@ public class Player {
     private double getActualGravity() {
         int wave = gravityWaveManager.getCurrentWave();
         isInverted = wave < 0;
-        return Math.abs(wave) * BASE_GRAVITY * Integer.signum(wave);
+        return Math.sqrt(Math.abs(wave)) * BASE_GRAVITY * Integer.signum(wave);
     }
 
     private int getJumpDirection() {
