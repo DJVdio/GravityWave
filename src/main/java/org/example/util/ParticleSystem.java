@@ -28,7 +28,7 @@ public class ParticleSystem {
                 }
                 break;
             case JUMP_DUST:
-                for (int i = 0; i < 20; i++) {
+                for (int i = 0; i < 10; i++) {
                     double angle = random.nextDouble() * Math.PI * 2;
                     double speed = random.nextDouble() * 2;
                     particles.add(new Particle(
