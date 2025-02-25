@@ -7,14 +7,19 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import org.example.powerBall.AttackBall;
 import org.example.powerBall.BallTypeEnum;
@@ -55,8 +60,99 @@ public class PlatformGame extends Application {
     // Replay 按钮
     private Button replayButton;
 
+    // 介绍页面相关
+    private Scene introScene;
+    private boolean introShown = false;
+
     @Override
     public void start(Stage primaryStage) {
+        createIntroScene(primaryStage); // 先创建介绍页面
+        primaryStage.setScene(introScene);
+        primaryStage.setTitle("Platform Game - Introduction");
+        primaryStage.show();
+    }
+
+    // 创建介绍页面
+    private void createIntroScene(Stage primaryStage) {
+        Pane introRoot = new Pane();
+        introScene = new Scene(introRoot, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // 背景
+        Rectangle bg = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        bg.setFill(Color.DARKGRAY);
+
+        // 玩家1信息
+        VBox player1Box = createPlayerInfo(
+                "player1.png",
+                "Player 1 Controls",
+                "A/D - Move Left/Right",
+                "K - Jump",
+                "J - Shoot"
+        );
+        player1Box.setLayoutX(50);
+        player1Box.setLayoutY(50);
+
+        // 玩家2信息
+        VBox player2Box = createPlayerInfo(
+                "player2_Reverse.png",
+                "Player 2 Controls",
+                "←/→ - Move Left/Right",
+                "NumPad2 - Jump",
+                "NumPad1 - Shoot"
+        );
+        player2Box.setLayoutX(SCREEN_WIDTH - 200);
+        player2Box.setLayoutY(50);
+
+        // 游戏规则
+        Text rules = new Text(
+                "Game Rules:\n" +
+                        "- Shoot the opponent to win!\n" +
+                        "- Collect Power Balls for special effects:\n" +
+                        "  Red: Spawn attack bullets to kill your enemy\n" +
+                        "  Green: Increase shooting speed and reduce shooting CD\n" +
+                        "- Gravity changes every 10 seconds"
+        );
+        rules.setFont(Font.font(24));
+        rules.setFill(Color.WHITE);
+        rules.setTextAlignment(TextAlignment.CENTER);
+        rules.setWrappingWidth(SCREEN_WIDTH - 100);
+        rules.setX(50);
+        rules.setY(SCREEN_HEIGHT / 2 - 100);
+
+        // 开始按钮
+        Button startBtn = new Button("Start Game");
+        startBtn.setFont(Font.font(30));
+        startBtn.setPrefSize(400, 120);
+        startBtn.setLayoutX(SCREEN_WIDTH / 2 - 200);
+        startBtn.setLayoutY(SCREEN_HEIGHT - 150);
+        startBtn.setOnAction(e -> {
+            primaryStage.setScene(new Scene(new Pane())); // 临时场景
+            initializeGame(primaryStage); // 初始化游戏
+        });
+
+        introRoot.getChildren().addAll(bg, player1Box, player2Box, rules, startBtn);
+    }
+
+    // 创建玩家信息面板的辅助方法
+    private VBox createPlayerInfo(String imagePath, String title, String... controls) {
+        ImageView playerImage = new ImageView(new Image(imagePath, 100, 100, true, true));
+        Text titleText = new Text(title);
+        titleText.setFont(Font.font(20));
+        titleText.setFill(Color.WHITE);
+
+        VBox controlsBox = new VBox(10);
+        for (String control : controls) {
+            Text t = new Text(control);
+            t.setFont(Font.font(16));
+            t.setFill(Color.WHITE);
+            controlsBox.getChildren().add(t);
+        }
+
+        return new VBox(20, playerImage, titleText, controlsBox);
+    }
+
+    // 分离游戏初始化逻辑
+    private void initializeGame(Stage stage) {
         Pane root = new Pane();
         Canvas canvas = new Canvas(SCREEN_WIDTH, SCREEN_HEIGHT);
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -84,9 +180,9 @@ public class PlatformGame extends Application {
             System.err.println("音效文件加载失败: " + e.getMessage());
         }
 
-        Scene scene = new Scene(root, SCREEN_WIDTH, SCREEN_HEIGHT);
+        Scene gameScene = new Scene(root, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        scene.setOnKeyPressed(e -> {
+        gameScene.setOnKeyPressed(e -> {
             if (gameOver) return;
             if (e.getCode() == KeyCode.A || e.getCode() == KeyCode.D) {
                 player1.handleKeyPress(e.getCode());
@@ -120,7 +216,7 @@ public class PlatformGame extends Application {
             }
         });
 
-        scene.setOnKeyReleased(e -> {
+        gameScene.setOnKeyReleased(e -> {
             if (gameOver) return;
             if (e.getCode() == KeyCode.A || e.getCode() == KeyCode.D || e.getCode() == KeyCode.K) {
                 player1.handleKeyRelease(e.getCode());
@@ -129,6 +225,10 @@ public class PlatformGame extends Application {
             }
         });
 
+        stage.setScene(gameScene);
+        stage.setTitle("Platform Game with Power-Ups");
+
+        // 原有动画定时器
         new AnimationTimer() {
             private long lastUpdateTime = System.nanoTime();
 
@@ -150,10 +250,6 @@ public class PlatformGame extends Application {
                 draw(gc);
             }
         }.start();
-
-        primaryStage.setTitle("Platform Game with Power-Ups");
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     private void updateBullets() {
