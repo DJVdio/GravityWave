@@ -37,7 +37,7 @@ public class AttackBall extends PowerBall {
     private void spawnAttackBullets(Player shooter, Player target) {
         List<Bullet> bullets = new ArrayList<>();
         int attackerId = shooter.getPlayerId();
-        double bulletSpeed = shooter.getBulletSpeed() / 2.5;
+        double bulletSpeed = 2.0;
 
         for (int i = 0; i < 8; i++) {
             double startX, startY;
