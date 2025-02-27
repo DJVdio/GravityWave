@@ -56,6 +56,7 @@ public class PlatformGame extends Application {
     // 音效（设为静态，便于在其他类中调用）
     private static MediaPlayer shootSound;
     private static MediaPlayer jumpSound;
+    private static MediaPlayer bgmPlayer;
 
     // Replay 按钮
     private Button replayButton;
@@ -176,6 +177,11 @@ public class PlatformGame extends Application {
         try {
             shootSound = new MediaPlayer(new Media(getClass().getResource("/sounds/shoot.wav").toString()));
             jumpSound = new MediaPlayer(new Media(getClass().getResource("/sounds/jump.wav").toString()));
+            Media bgmMedia = new Media(getClass().getResource("/sounds/bgm.mp3").toString());
+            bgmPlayer = new MediaPlayer(bgmMedia);
+            bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE); // 循环播放
+            bgmPlayer.setVolume(1);
+            bgmPlayer.play();
         } catch (Exception e) {
             System.err.println("音效文件加载失败: " + e.getMessage());
         }
