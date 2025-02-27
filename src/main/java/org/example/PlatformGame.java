@@ -237,7 +237,6 @@ public class PlatformGame extends Application {
                 if (!gameOver) {
                     double elapsedTime = (now - lastUpdateTime) / 1_000_000_000.0;
                     lastUpdateTime = now;
-
                     gravityWaveManager.update(elapsedTime);
                     player1.update(platforms, player2, elapsedTime);
                     player2.update(platforms, player1, elapsedTime);
@@ -246,6 +245,9 @@ public class PlatformGame extends Application {
                     updatePowerBalls(elapsedTime);
                     checkPowerBallCollision();
                     spawnPowerBall(elapsedTime);
+                }
+                if (gameOver){
+                    lastUpdateTime = now;
                 }
                 draw(gc);
             }
