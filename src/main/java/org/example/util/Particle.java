@@ -21,7 +21,7 @@ public class Particle {
     }
 
     public boolean update(double elapsedTime) {
-        x += vx * elapsedTime * 60; // 补偿帧率
+        x += vx * elapsedTime * 60;
         y += vy * elapsedTime * 60;
         life -= elapsedTime;
         return life > 0;

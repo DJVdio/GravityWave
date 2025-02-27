@@ -21,8 +21,8 @@ public class ParticleSystem {
                             x, y,
                             Math.cos(angle) * speed,
                             Math.sin(angle) * speed,
-                            0.3, // 短寿命
-                            Color.rgb(255, 200, 0, 0.7), // 橙色半透明
+                            0.3,
+                            Color.rgb(255, 200, 0, 0.7),
                             2
                     ));
                 }
@@ -35,8 +35,8 @@ public class ParticleSystem {
                             x, y,
                             Math.cos(angle) * speed,
                             Math.sin(angle) * speed,
-                            0.7, // 中等寿命
-                            Color.gray(0.5, 0.8), // 灰色半透明
+                            0.7,
+                            Color.gray(0.5, 0.7),
                             3
                     ));
                 }
