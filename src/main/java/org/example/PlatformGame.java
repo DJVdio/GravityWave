@@ -108,6 +108,7 @@ public class PlatformGame extends Application {
                         "- Collect Power Balls for special effects:\n" +
                         "  Red: Spawn attack bullets to kill your enemy\n" +
                         "  Green: Increase shooting speed and reduce shooting CD\n" +
+                        "  Blue: You can shoot more bullets in one time\n" +
                         "- Gravity changes every 10 seconds"
         );
         rules.setFont(Font.font(24));
