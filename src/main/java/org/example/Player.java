@@ -8,6 +8,7 @@ import org.example.util.CountdownUtil;
 import org.example.util.GravityWaveManager;
 import org.example.util.ParticleSystem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
@@ -35,6 +36,9 @@ public class Player {
     private CountdownUtil shootCountdown;
     private final GravityWaveManager gravityWaveManager;
     private final ParticleSystem particleSystem;
+
+    private boolean superBulletActive = false;
+    private double superBulletTimer = 0;
 
     public Player(double startX, double startY, int playerId, double shootInterval,
                   GravityWaveManager gravityWaveManager, ParticleSystem particleSystem) {
@@ -143,6 +147,7 @@ public class Player {
     }
 
     public void update(List<Platform> platforms, Player otherPlayer, double elapsedTime) {
+        updateSuperBulletTimer(elapsedTime);
         double moveSpeed = Math.abs(gravityWaveManager.getCurrentWave()) == 1 ? 2.5 : 1.5;
 
         if (isMovingLeft) {
@@ -214,14 +219,54 @@ public class Player {
         }
     }
 
-    public Bullet shoot() {
+    public List<Bullet> shoot() {
         if (shootCountdown.isFinished()) {
             shootCountdown.reset();
-            double bulletX = facingRight ? x + PLAYER_SIZE : x - Bullet.SIZE;
-            double bulletY = y + (PLAYER_SIZE - Bullet.SIZE) / 2;
-            return new Bullet(bulletX, bulletY, facingRight, bulletSpeed, playerId);
+            List<Bullet> bullets = new ArrayList<>();
+
+            if (superBulletActive) {
+                double[] angles = {0, 15, -15};
+                for (double angle : angles) {
+                    bullets.add(createAngledBullet(
+                            facingRight ? x + PLAYER_SIZE : x - Bullet.SIZE,
+                            y + (PLAYER_SIZE - Bullet.SIZE) / 2,
+                            angle,
+                            Color.BLUE
+                    ));
+                }
+            } else {
+                bullets.add(createAngledBullet(
+                        facingRight ? x + PLAYER_SIZE : x - Bullet.SIZE,
+                        y + (PLAYER_SIZE - Bullet.SIZE) / 2,
+                        0,
+                        Color.YELLOW
+                ));
+            }
+
+            return bullets;
         }
         return null;
+    }
+
+    private Bullet createAngledBullet(double x, double y, double angleDegrees, Color color) {
+        double angle = Math.toRadians(angleDegrees);
+        double direction = facingRight ? 1 : -1;
+
+        Bullet bullet = new Bullet(
+                x,
+                y,
+                facingRight,
+                bulletSpeed,
+                playerId,
+                color
+        );
+
+        bullet.setVelocity(
+                Math.cos(angle) * bulletSpeed * direction,
+                Math.sin(angle) * bulletSpeed
+        );
+
+        return bullet;
     }
 
     public void draw(GraphicsContext gc) {
@@ -303,5 +348,19 @@ public class Player {
     // 添加一个访问器，用于判断是否在地面上
     public boolean isOnGround() {
         return isOnGround;
+    }
+
+    public void activateSuperBullet(double duration) {
+        this.superBulletActive = true;
+        this.superBulletTimer = duration;
+    }
+
+    public void updateSuperBulletTimer(double elapsedTime) {
+        if (superBulletActive) {
+            superBulletTimer -= elapsedTime;
+            if (superBulletTimer <= 0) {
+                superBulletActive = false;
+            }
+        }
     }
 }

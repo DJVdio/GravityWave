@@ -21,10 +21,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import org.example.powerBall.AttackBall;
-import org.example.powerBall.BallTypeEnum;
-import org.example.powerBall.PowerBall;
-import org.example.powerBall.ShootingSpeedUpBall;
+import org.example.powerBall.*;
 import org.example.util.GravityWaveManager;
 import org.example.util.ParticleSystem;
 
@@ -206,16 +203,16 @@ public class PlatformGame extends Application {
                     playJumpSound();
                 }
             } else if (e.getCode() == KeyCode.J) {
-                Bullet bullet = player1.shoot();
-                if (bullet != null) {
-                    bullets.add(bullet);
+                List<Bullet> bullets = player1.shoot(); // 需要修改shoot方法返回多个子弹
+                if (bullets != null) {
+                    PlatformGame.addBullets(bullets);
                     shootSound.stop();
                     shootSound.play();
                 }
             } else if (e.getCode() == KeyCode.NUMPAD1) {
-                Bullet bullet = player2.shoot();
-                if (bullet != null) {
-                    bullets.add(bullet);
+                List<Bullet> bullets = player2.shoot(); // 需要修改shoot方法返回多个子弹
+                if (bullets != null) {
+                    PlatformGame.addBullets(bullets);
                     shootSound.stop();
                     shootSound.play();
                 }
@@ -424,8 +421,11 @@ public class PlatformGame extends Application {
             case 1:
                 powerBall = new ShootingSpeedUpBall(x, y);
                 break;
+            case 2:  // 新增蓝球类型
+                powerBall = new SuperBulletBall(x, y);
+                break;
             default:
-                throw new IllegalStateException("Unexpected value: " + random.nextInt(BallTypeEnum.values().length));
+                throw new IllegalStateException("Unexpected value");
         }
 
         powerBalls.add(powerBall);
